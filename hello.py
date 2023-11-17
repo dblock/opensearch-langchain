@@ -3,7 +3,7 @@ import logging
 from os import environ
 from typing import List
 from urllib.parse import urlparse
-from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection, __versionstr__
+from opensearchpy import Urllib3AWSV4SignerAuth, __versionstr__
 from langchain.vectorstores import OpenSearchVectorSearch
 from langchain.schema.embeddings import Embeddings
 from boto3 import Session
@@ -15,7 +15,7 @@ url = urlparse(opensearch_url)
 region = environ.get('AWS_REGION', 'us-east-1')
 service = environ.get('SERVICE', 'es')
 credentials = Session().get_credentials()
-auth = AWSV4SignerAuth(credentials, region, service)
+auth = Urllib3AWSV4SignerAuth(credentials, region, service)
 
 print(f"Using opensearch-py {__versionstr__}")
 
@@ -34,7 +34,6 @@ docsearch = OpenSearchVectorSearch.from_texts(
     opensearch_url=opensearch_url,
     use_ssl=True,
     verify_certs=True,
-    connection_class=RequestsHttpConnection,
     http_auth=auth,
     timeout=30
 )
