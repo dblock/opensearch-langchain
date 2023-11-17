@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.9"
 langchain = "0.0.336"
 opensearch-py = "2.4.1"
+boto3 = "*"
 
 [build-system]
 requires = ["poetry-core"]

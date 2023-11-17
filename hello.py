@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
-
+import logging
 from os import environ
 from typing import List
+from urllib.parse import urlparse
+from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection, __versionstr__
 from langchain.vectorstores import OpenSearchVectorSearch
 from langchain.schema.embeddings import Embeddings
+from boto3 import Session
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+
+opensearch_url = environ['ENDPOINT']
+url = urlparse(opensearch_url)
+region = environ.get('AWS_REGION', 'us-east-1')
+service = environ.get('SERVICE', 'es')
+credentials = Session().get_credentials()
+auth = AWSV4SignerAuth(credentials, region, service)
+
+print(f"Using opensearch-py {__versionstr__}")
 
 fake_texts = ["foo", "bar", "baz"]
 
@@ -17,9 +31,12 @@ class FakeEmbeddings(Embeddings):
 docsearch = OpenSearchVectorSearch.from_texts(
     fake_texts, 
     FakeEmbeddings(), 
-    opensearch_url=ENV['ENDPOINT'], 
-    verify_certs=False, 
-    http_auth=("admin", "admin")
+    opensearch_url=opensearch_url,
+    use_ssl=True,
+    verify_certs=True,
+    connection_class=RequestsHttpConnection,
+    http_auth=auth,
+    timeout=30
 )
 
 OpenSearchVectorSearch.add_texts(
